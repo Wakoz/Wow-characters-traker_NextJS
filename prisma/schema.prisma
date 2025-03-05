@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int         @id @default(autoincrement())
+  email      String      @unique
+  password   String
+  characters Character[]
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+model Server {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  region     String
+  characters Character[]
+
+  @@map("servers")
+}
+
+model Class {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  colorCode  String      @map("color_code")
+  characters Character[]
+
+  @@map("classes")
+}
+
+model Race {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  faction    Faction     @relation(fields: [factionId], references: [id])
+  factionId  Int         @map("faction_id")
+  characters Character[]
+
+  @@map("races")
+}
+
+model Faction {
+  id         Int     @id @default(autoincrement())
+  name       String  @unique
+  colorCode  String  @map("color_code")
+  races      Race[]
+
+  @@map("factions")
+}
+
+model Character {
+  id        Int      @id @default(autoincrement())
+  name      String
+  level     Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int      @map("user_id")
+  class     Class    @relation(fields: [classId], references: [id])
+  classId   Int      @map("class_id")
+  server    Server   @relation(fields: [serverId], references: [id])
+  serverId  Int      @map("server_id")
+  race      Race     @relation(fields: [raceId], references: [id])
+  raceId    Int      @map("race_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([name, serverId])
+  @@map("characters")
+}
